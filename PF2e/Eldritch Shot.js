@@ -165,8 +165,17 @@ async function Eldritch_shot()
             
       }
       
+      let critt;
+      function SSDOS(cm, jq) {
+        if (cm.user.id === game.userId && cm.isCheckRoll) { critt = cm.data.flags.pf2e.context.outcome; }
+      }
+
+      Hooks.on('renderChatMessage', SSDOS);
+
       await strike.attack({ event });
-      const critt = await game.messages.contents.reverse().find(x => x.isCheckRoll && x.actor === token.actor).data.flags.pf2e.context.outcome;
+      
+      Hooks.off('renderChatMessage', SSDOS);
+
       let traits = spc.data.item.data.data.traits.value.join();
       let ttags = '';
       spc.data.item.data.data.traits.value.forEach( t => {
@@ -252,9 +261,7 @@ async function Eldritch_shot()
       }
       if (critt === 'success' || critt === 'criticalSuccess') {
         if (spc.slug !== 'chromatic-ray' && ( spc.data.item.data.data.damage.value === '' || spc.data.item.data.data.damage.value === undefined || Object.entries(spc.spell.chatData.damage.value).length === 0 || !spc.spell.chatData.isAttack) ){
-          if (spc.spell.spell.data.data.heightenedLevel === undefined) { spc.spell.spell.data.data.heightenedLevel = {value: spc.lvl}; }
-          else {spc.spell.spell.data.data.heightenedLevel.value = spc.lvl;}
-          await spc.spell.spell.toMessage();
+          return await s_entry.cast(spc.spell.spell,{slot: spc.index,level: spc.lvl,message: true});
         }
         if (critt === 'criticalSuccess' && (game.settings.get("pf2e","critRule") === 'doubledice')) { spc.formula = ddice; } 
         if (critt === 'criticalSuccess' && (game.settings.get("pf2e","critRule") === 'doubledamage')) {  ui.notifications.info('Spell damage will need to be doubled when applied'); }
