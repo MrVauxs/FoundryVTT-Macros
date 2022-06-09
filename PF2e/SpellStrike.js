@@ -16,7 +16,6 @@ async function Spellstrike()
   if (game.user.targets.size < 1) { return ui.notifications.warn('Please target a token'); }
   if (game.user.targets.size > 1) { return ui.notifications.warn('Spellstrike can only affect 1 target'); }
 
-
   for (let token of canvas.tokens.controlled) {
     /* Check for eldritch archer dedication and warn if not present */
     if (!token.actor.itemTypes.feat.find(e => e.slug === "spellstrike")) {
@@ -226,8 +225,17 @@ async function Spellstrike()
             
       }
 
+      let critt;
+      function SSDOS(cm, jq) {
+        if (cm.user.id === game.userId && cm.isCheckRoll) { critt = cm.data.flags.pf2e.context.outcome; }
+      }
+
+      Hooks.on('renderChatMessage', SSDOS);
+
       await strike.attack({ event });
-      const critt = game.messages.contents.reverse().find(x => x.isCheckRoll && x.actor === token.actor).data.flags.pf2e.context.outcome;
+      
+      Hooks.off('renderChatMessage', SSDOS);
+
       let traits = spc.data.item.data.data.traits.value.join();
       let ttags = '';
       spc.data.item.data.data.traits.value.forEach( t => {
@@ -313,9 +321,7 @@ async function Spellstrike()
       }
       if (critt === 'success' || critt === 'criticalSuccess') {
         if (spc.slug !== 'chromatic-ray' && ( spc.data.item.data.data.damage.value === '' || spc.data.item.data.data.damage.value === undefined || Object.entries(spc.spell.chatData.damage.value).length === 0 || !spc.spell.chatData.isAttack) ){
-          if (spc.spell.spell.data.data.heightenedLevel === undefined) { spc.spell.spell.data.data.heightenedLevel = {value: spc.lvl}; }
-          else {spc.spell.spell.data.data.heightenedLevel.value = spc.lvl;}
-          await spc.spell.spell.toMessage();
+          return s_entry.cast(spc.spell.spell,{slot: spc.index,level: spc.lvl,message: true});
         }
         else {
           if (critt === 'criticalSuccess' && (game.settings.get("pf2e","critRule") === 'doubledice')) { spc.formula = ddice; } 
@@ -330,11 +336,16 @@ async function Spellstrike()
           }
         }
       }
-        /* Expend slots */
-        if ( spc.data.item.isCantrip ) { return; }
-        if ( spell_choice[2] ) { spc = spcBack; }
-	await s_entry.cast(spc.spell.spell,{slot: spc.index,level: spc.lvl,message: false});
-	}
+
+      if ( critt === 'failure' && !spc.spell.chatData.isAttack) { 
+        return s_entry.cast(spc.spell.spell,{slot: spc.index,level: spc.lvl,message: true}); 
+      }
+      
+      /* Expend slots */
+      if ( spc.data.item.isCantrip ) { return; }
+      if ( spell_choice[2] ) { spc = spcBack; }
+      await s_entry.cast(spc.spell.spell,{slot: spc.index,level: spc.lvl,message: false});
+   }
 
 }
 
