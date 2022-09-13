@@ -19,9 +19,9 @@ const class2 = await classesPack.getDocument(classesPack.index.find(n => n.name 
 
 if ( class1 === class2 ) { return ui.notifications.warn("You cannot select the same class twice"); }
 
-const dClassObj = Object.create(Object.getPrototypeOf(class1));
-Object.defineProperty(dClassObj, 'data', {
-   value: duplicate(class1),
+const dClassObj = Object.assign({}, class1);
+Object.defineProperty(dClassObj, 'system', {
+   value: duplicate(class1.system),
    configurable: true,
    writeable: true
 });
@@ -29,95 +29,103 @@ Object.defineProperty(dClassObj, 'data', {
 const rE = {
     "domain": "all",
     "key": "RollOption",
-    "option": `class:${class2.data.data.slug}`
+    "option": `class:${class2.system.slug}`
 };
 
-const dClass = dClassObj.data;
-dClass.name = `${class1.data.name} - ${class2.data.name}`;
+const dClass = dClassObj;
+/*dClass.initialized = true;
+dClass.sort = class1.sort;
+dClass._stats = class1._stats;
+dClass.effects = class1.effects;
+dClass.flags = class1.flags;
+dClass.type = "class";
+dClass.rules = class1.rules;
+dClass.ownership = class1.ownership;*/
+dClass.name = `${class1.name} - ${class2.name}`;
 
 //Attacks
-if (class2.data.data.attacks.avanced > class1.data.data.attacks.avanced) { dClass.data.attacks.advanced = class2.data.data.attacks.avanced }
-if (class2.data.data.attacks.martial > class1.data.data.attacks.martial) { dClass.data.attacks.martial = class2.data.data.attacks.martial }
-if (class2.data.data.attacks.simple > class1.data.data.attacks.simple) { dClass.data.attacks.advanced = class2.data.data.attacks.simple }
-if (class2.data.data.attacks.unarmed > class1.data.data.attacks.unarmed) { dClass.data.attacks.advanced = class2.data.data.attacks.unarmed }
-if (dClass.data.attacks.martial <= class2.data.data.attacks.other.rank) { 
-  if ( class2.data.data.attacks.other.rank === class1.data.data.attacks.other.rank ) {
-    let mashed = `${dClass.data.attacks.other.name}, ${class2.data.data.attacks.other.name}`
+if (class2.system.attacks.avanced > class1.system.attacks.avanced) { dClass.system.attacks.advanced = class2.system.attacks.avanced }
+if (class2.system.attacks.martial > class1.system.attacks.martial) { dClass.system.attacks.martial = class2.system.attacks.martial }
+if (class2.system.attacks.simple > class1.system.attacks.simple) { dClass.system.attacks.advanced = class2.system.attacks.simple }
+if (class2.system.attacks.unarmed > class1.system.attacks.unarmed) { dClass.system.attacks.advanced = class2.system.attacks.unarmed }
+if (dClass.system.attacks.martial <= class2.system.attacks.other.rank) { 
+  if ( class2.system.attacks.other.rank === class1.system.attacks.other.rank ) {
+    let mashed = `${dClass.system.attacks.other.name}, ${class2.system.attacks.other.name}`
     mashed = mashed.replace("and ", "")
-    dClass.data.attacks.other.name = [...new Set(mashed.split(','))].join(',');
+    dClass.system.attacks.other.name = [...new Set(mashed.split(','))].join(',');
   }
-  if ( class2.data.data.attacks.other.rank > class1.data.data.attacks.other.rank ) { dClass.data.attacks.other.name = class2.data.data.attacks.other.name; dClass.data.attacks.other.rank = class2.data.data.attacks.other.rank; }
+  if ( class2.system.attacks.other.rank > class1.system.attacks.other.rank ) { dClass.system.attacks.other.name = class2.system.attacks.other.name; dClass.system.attacks.other.rank = class2.system.attacks.other.rank; }
 }
-if (dClass.data.attacks.martial >= class2.data.data.attacks.other.rank && dClass.data.attacks.martial >= dClass.data.attacks.other.rank) { dClass.data.attacks.other.rank = 0; dClass.data.attacks.other.name = ""; }
+if (dClass.system.attacks.martial >= class2.system.attacks.other.rank && dClass.system.attacks.martial >= dClass.system.attacks.other.rank) { dClass.system.attacks.other.rank = 0; dClass.system.attacks.other.name = ""; }
 
 //Class DC
-if (class2.data.data.classDC > dClass.data.classDC) { dClass.data.classDC = class2.data.data.classDC }
+if (class2.system.classDC > dClass.system.classDC) { dClass.system.classDC = class2.system.classDC }
 
 //Defenses
-if (class2.data.data.defenses.heavy > dClass.data.defenses.heavy) { dClass.data.defenses.heavy = class2.data.data.defenses.heavy }
-if (class2.data.data.defenses.light > dClass.data.defenses.light) { dClass.data.defenses.light = class2.data.data.defenses.light }
-if (class2.data.data.defenses.heavy > dClass.data.defenses.medium) { dClass.data.defenses.medium = class2.data.data.defenses.medium }
-if (class2.data.data.defenses.heavy > dClass.data.defenses.unarmored) { dClass.data.defenses.unarmored = class2.data.data.defenses.unarmored }
+if (class2.system.defenses.heavy > dClass.system.defenses.heavy) { dClass.system.defenses.heavy = class2.system.defenses.heavy }
+if (class2.system.defenses.light > dClass.system.defenses.light) { dClass.system.defenses.light = class2.system.defenses.light }
+if (class2.system.defenses.heavy > dClass.system.defenses.medium) { dClass.system.defenses.medium = class2.system.defenses.medium }
+if (class2.system.defenses.heavy > dClass.system.defenses.unarmored) { dClass.system.defenses.unarmored = class2.system.defenses.unarmored }
 
 //Description
-dClass.data.description.value = `${dClass.data.description.value} ${class2.data.data.description.value}`;
+dClass.system.description.value = `${dClass.system.description.value} ${class2.system.description.value}`;
 
 //HP
-if (class2.data.data.hp > dClass.data.hp) { dClass.data.hp = class2.data.data.hp }
+if (class2.system.hp > dClass.system.hp) { dClass.system.hp = class2.system.hp }
 
 //Items
-Object.entries(class2.data.data.items).forEach( i => {
-  if(Object.values(dClass.data.items).some(x => x.id === i[1].id)) { return }
-  dClass.data.items[i[0]] = i[1];
+Object.entries(class2.system.items).forEach( i => {
+  if(Object.values(dClass.system.items).some(x => x.id === i[1].id)) { return }
+  dClass.system.items[i[0]] = i[1];
 });
 
 //Key Ability
-class2.data.data.keyAbility.value.forEach( v => {
-  if (dClass.data.keyAbility.value.includes(v)) { return }
-  dClass.data.keyAbility.value.push(v);
+class2.system.keyAbility.value.forEach( v => {
+  if (dClass.system.keyAbility.value.includes(v)) { return }
+  dClass.system.keyAbility.value.push(v);
 });
 
 //Perception
-if (class2.data.data.perception > dClass.data.perception) { dClass.data.perception = class2.data.data.perception }
+if (class2.system.perception > dClass.system.perception) { dClass.system.perception = class2.system.perception }
 
 //Rules
-dClass.data.rules.push(rE);
-class2.data.data.rules.forEach( r => {
-  if (dClass.data.rules.includes(r)) { return }
-  dClass.data.rules.push(r);
+dClass.system.rules.push(rE);
+class2.system.rules.forEach( r => {
+  if (dClass.system.rules.includes(r)) { return }
+  dClass.system.rules.push(r);
 });
-dClass.data.rules.forEach( (r,i) => {
+dClass.system.rules.forEach( (r,i) => {
   if(r.path === undefined) { return }
   const check = r.path.split('.');
-  if(check.includes("data") && check.includes("martial") && check.includes("rank") && dClass.data.attacks.martial >= r.value) {
-   dClass.data.rules.splice(i,1);
+  if(check.includes("data") && check.includes("martial") && check.includes("rank") && dClass.system.attacks.martial >= r.value) {
+   dClass.system.rules.splice(i,1);
   }
 });
 
 //Saving Throws
-if (class2.data.data.savingThrows.fortitude > dClass.data.savingThrows.fortitude) { dClass.data.savingThrows.fortitude = class2.data.data.savingThrows.fortitude }
-if (class2.data.data.savingThrows.reflex > dClass.data.savingThrows.reflex) { dClass.data.savingThrows.reflex = class2.data.data.savingThrows.reflex }
-if (class2.data.data.savingThrows.will > dClass.data.savingThrows.will) { dClass.data.savingThrows.will = class2.data.data.savingThrows.will }
+if (class2.system.savingThrows.fortitude > dClass.system.savingThrows.fortitude) { dClass.system.savingThrows.fortitude = class2.system.savingThrows.fortitude }
+if (class2.system.savingThrows.reflex > dClass.system.savingThrows.reflex) { dClass.system.savingThrows.reflex = class2.system.savingThrows.reflex }
+if (class2.system.savingThrows.will > dClass.system.savingThrows.will) { dClass.system.savingThrows.will = class2.system.savingThrows.will }
 
 //Skill Feat Levels
-class2.data.data.skillFeatLevels.value.forEach( v => { dClass.data.skillFeatLevels.value.push(v) });
-dClass.data.skillFeatLevels.value = [...new Set(dClass.data.skillFeatLevels.value)].sort((a, b) => { return a - b; });
+class2.system.skillFeatLevels.value.forEach( v => { dClass.system.skillFeatLevels.value.push(v) });
+dClass.system.skillFeatLevels.value = [...new Set(dClass.system.skillFeatLevels.value)].sort((a, b) => { return a - b; });
 
 //Skill Increase Levels
-class2.data.data.skillIncreaseLevels.value.forEach( v => { dClass.data.skillIncreaseLevels.value.push(v) });
-dClass.data.skillIncreaseLevels.value = [...new Set(dClass.data.skillIncreaseLevels.value)].sort((a, b) => { return a - b; });
+class2.system.skillIncreaseLevels.value.forEach( v => { dClass.system.skillIncreaseLevels.value.push(v) });
+dClass.system.skillIncreaseLevels.value = [...new Set(dClass.system.skillIncreaseLevels.value)].sort((a, b) => { return a - b; });
 
 //Trained Skills
-if ( class2.data.data.trainedSkills.additional > dClass.data.trainedSkills.additional ) { dClass.data.trainedSkills.additional = class2.data.data.trainedSkills.additional }
-class2.data.data.trainedSkills.value.forEach( v => {
-  if (dClass.data.trainedSkills.value.includes(v)) { return }
-  dClass.data.trainedSkills.value.push(v);
+if ( class2.system.trainedSkills.additional > dClass.system.trainedSkills.additional ) { dClass.system.trainedSkills.additional = class2.system.trainedSkills.additional }
+class2.system.trainedSkills.value.forEach( v => {
+  if (dClass.system.trainedSkills.value.includes(v)) { return }
+  dClass.system.trainedSkills.value.push(v);
 });
 
 //Set the image of the Class
-dClass.img = "systems/pf2e/icons/spells/guidance.webp"
+dClass.img = "systems/pf2e/icons/spells/guidance.webp";
 
-Item.create(dClass);
+await Item.create(dClass);
 
 async function quickDialog({data, title = `Quick Dialog`} = {}) {
   data = data instanceof Array ? data : [data];

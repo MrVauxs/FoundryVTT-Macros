@@ -36,7 +36,7 @@ const iC = ["battlezoo-ancestries-dragons-pf2e.pf2e-battlezoo-dragon-equipment",
 const item = game.packs.filter(c => iC.includes(c.collection));
 const items = [];
 for (const i of item) {
-    const index = await i.getIndex({fields: ["system.level.value", "system.slug", "system.price.value", "system.traits.value", "system.traits.rarity"]});
+    const index = await i.getIndex({fields: ["data.level.value", "data.slug", "data.price.value", "data.traits.value", "data.traits.rarity"]});
     index.forEach( x => {
         x.compendium = i.collection;
         items.push(x);
@@ -50,15 +50,14 @@ let spellS = [];
 if (picks[0] !== "Treasures") {
   const iS = ["pf2e.spells-srd","pf2e-expansion-pack.Expansion-Spells","pf2e-wayfinder.wayfinder-spells"];
   spellz = game.packs.filter(c => iS.includes(c.collection));
-  console.log(spellz);
   for (const s of spellz) {
-    const index = (await s.getIndex({fields: ["system.level.value","system.slug","system.traits","system.category"]})).filter(f => !f.system.traits.value.includes("cantrip") && f.system.category.value !== "ritual" && f.system.category.value !== "focus");
+    const index = (await s.getIndex({fields: ["data.level.value","data.slug","data.traits","data._id","data.category"]})).filter(f => !f.data.traits.value.includes("cantrip") && f.data.category.value !== "ritual" && f.data.category.value !== "focus");
     index.forEach( x => {
         x.compendium = s.collection;
         spellS.push(x);
     });
   }
-  if ( picks[4] !== "No filter" ) { spellS = spellS.filter(s => s.system.traits.rarity === picks[4].toLowerCase()); }
+  if ( picks[4] !== "No filter" ) { spellS = spellS.filter(s => s.data.traits.rarity === picks[4].toLowerCase()); }
 }
 
 
@@ -89,7 +88,7 @@ if (picks[0] === "Treasures") {
 			denomination = "gp";
 			value = Math.round(picks[2] / 10);
                 } 
-	        treasures = treasure.filter(f => range.includes(f.system.price.value.sp) || range.includes(f.system.price.value.gp*10) );
+	        treasures = treasure.filter(f => range.includes(f.data.price.value.sp) || range.includes(f.data.price.value.gp*10) );
                 
 		if (treasures.length === 0) { return ui.notifications.warn(`There are no treasures within 50% of ${value}${denomination}`); }
 		
@@ -110,13 +109,13 @@ if (picks[0] === "Treasures") {
 if (picks[0] === "Permanents") {
 	if(Noan(picks[1])) { return ui.notifications.error("Level of at least 0 must be entered");}
 
-	const treasure = items.filter(t => t.type === "armor" || t.type === "weapon" || t.type === "equipment" || t.type === "backpack" || t.system.traits.value.includes("wand"));
-	let treasures = treasure.filter( l => l.system.level.value === picks[1] );
-        if ( picks[4] !== "No filter" ) { treasures = treasures.filter( r => r.system.traits.rarity === picks[4].toLowerCase() || (r.system.slug.includes("magic-wand") && picks[4] !== "Unique")); }
+	const treasure = items.filter(t => t.type === "armor" || t.type === "weapon" || t.type === "equipment" || t.type === "backpack" || t.data.traits.value.includes("wand"));
+	let treasures = treasure.filter( l => l.data.level.value === picks[1] );
+        if ( picks[4] !== "No filter" ) { treasures = treasures.filter( r => r.data.traits.rarity === picks[4].toLowerCase() || (r.data.slug.includes("magic-wand") && picks[4] !== "Unique")); }
         if (treasures.length === 0) { return ui.notifications.info(`There are no ${picks[4].toLowerCase()} ${picks[0].toLowerCase()} at level ${picks[1]}`); }
 	itemArray.forEach( r => {
 		let random = Math.floor(Math.random() * treasures.length);
-		randomItems.push({name: treasures[random].name, id: treasures[random]._id, slug:treasures[random].system.slug, compendium: treasures[random].compendium})
+		randomItems.push({name: treasures[random].name, id: treasures[random]._id, slug:treasures[random].data.slug, compendium: treasures[random].compendium})
 	});
 	let output;
 	randomItems.forEach( r => {
@@ -124,10 +123,10 @@ if (picks[0] === "Permanents") {
 		if (output === undefined) { 
 			if(slug !== null && slug.includes("magic-wand")){
 				const level = parseInt(slug.substr(11,1));   
-				const spells = spellS.filter(l => l.system.level.value === level);
+				const spells = spellS.filter(l => l.data.level.value === level);
                                 if (spells.length === 0) { 
                                   const random = Math.floor(Math.random() * treasures.length);
-                                  const tr = treasures.filter(n => !n.system.slug.includes("scroll-of-"));
+                                  const tr = treasures.filter(n => !n.data.slug.includes("scroll-of-"));
 		                  return output = `<p>@Compendium[${tr[random].compendium}.${tr[random]._id}]{${tr[random].name}}</p>`;
                                 }
 				const randomSpell = spells[Math.floor(Math.random() * spells.length)];
@@ -138,10 +137,10 @@ if (picks[0] === "Permanents") {
 		else { 
 			if(slug !== null && slug.includes("magic-wand")){
 				const level = parseInt(r.slug.substr(11,1));
-				const spells = spellS.filter(l => l.system.level.value === level);
+				const spells = spellS.filter(l => l.data.level.value === level);
                                 if (spells.length === 0) { 
                                   const random = Math.floor(Math.random() * treasures.length);
-                                  const tr = treasures.filter(n => !n.system.slug.includes("scroll-of-"));
+                                  const tr = treasures.filter(n => !n.data.slug.includes("scroll-of-"));
 		                  return output += `<p>@Compendium[${tr[random].compendium}.${tr[random]._id}]{${tr[random].name}}</p>`
                                 }
 				const randomSpell = spells[Math.floor(Math.random() * spells.length)];
@@ -157,13 +156,13 @@ if (picks[0] === "Permanents") {
 //Consumbales
 if (picks[0] === "Consumables") {
 	if(Noan(picks[1])) { return ui.notifications.error("Level of at least 0 must be entered");}
-	const treasure = items.filter(t => t.type === "consumable" && !t.system.traits.value.includes("wand"));
-	let treasures = treasure.filter( l => l.system.level.value === picks[1] );
-        if ( picks[4] !== "No filter" ) { treasures = treasures.filter( r => r.system.traits.rarity === picks[4].toLowerCase() || (r.system.slug.includes("scroll-of-") && picks[4] !== "Unique")); }
+	const treasure = items.filter(t => t.type === "consumable" && !t.data.traits.value.includes("wand"));
+	let treasures = treasure.filter( l => l.data.level.value === picks[1] );
+        if ( picks[4] !== "No filter" ) { treasures = treasures.filter( r => r.data.traits.rarity === picks[4].toLowerCase() || (r.data.slug.includes("scroll-of-") && picks[4] !== "Unique")); }
         if (treasures.length === 0) { return ui.notifications.info(`There are no ${picks[4].toLowerCase()} ${picks[0].toLowerCase()} at level ${picks[1]}`); }        
 	itemArray.forEach( r => {
 		const random = Math.floor(Math.random() * treasures.length);
-		randomItems.push({name: treasures[random].name, id: treasures[random]._id, slug:treasures[random].system.slug, compendium: treasures[random].compendium})
+		randomItems.push({name: treasures[random].name, id: treasures[random]._id, slug:treasures[random].data.slug, compendium: treasures[random].compendium})
 	});
 	let output;
 	randomItems.forEach( r => {
@@ -171,10 +170,10 @@ if (picks[0] === "Consumables") {
 		if (output === undefined) { 
 			if(slug !== null && slug.includes("scroll-of-")){
 				const level = parseInt(r.slug.substr(10,1));
-				const spells = spellS.filter(l => l.system.level.value === level);
+				const spells = spellS.filter(l => l.data.level.value === level);
                                 if (spells.length === 0) { 
                                   const random = Math.floor(Math.random() * treasures.length);
-                                  const tr = treasures.filter(n => !n.system.slug.includes("scroll-of-"));
+                                  const tr = treasures.filter(n => !n.data.slug.includes("scroll-of-"));
 		                  return output = `<p>@Compendium[${tr[random].compendium}.${tr[random]._id}]{${tr[random].name}}</p>`
                                 }
 				const randomSpell = spells[Math.floor(Math.random() * spells.length)];
@@ -185,10 +184,10 @@ if (picks[0] === "Consumables") {
 		else { 
 			if(slug !== null && slug.includes("scroll-of-")){
 				const level = parseInt(r.slug.substr(10,1));
-				const spells = spellS.filter(l => l.system.level.value === level);
+				const spells = spellS.filter(l => l.data.level.value === level);
                                 if (spells.length === 0) { 
                                   const random = Math.floor(Math.random() * treasures.length);
-                                  const tr = treasures.filter(n => !n.system.slug.includes("scroll-of-"));
+                                  const tr = treasures.filter(n => !n.data.slug.includes("scroll-of-"));
 		                  return output += `<p>@Compendium[${tr[random].compendium}.${tr[random]._id}]{${tr[random].name}}</p>`
                                 }
 				const randomSpell = spells[Math.floor(Math.random() * spells.length)];

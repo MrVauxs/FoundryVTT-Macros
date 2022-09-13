@@ -17,16 +17,17 @@ if (!token.actor.isSpellcaster) { return ui.notifications.warn(`${token.actor.na
 
 const script = async function Spells(id){
   for (const token of canvas.tokens.controlled) {
+		let level;
 		let spells = [];
 		let buttons = {};
-		const spellData = await (token.actor.itemTypes.spellcastingEntry.find( i => i.id === id)).getSpellData();
+		const spellData = token.actor.itemTypes.spellcastingEntry.find( i => i.id === id).getSpellData();
 				spellData.levels.forEach(sp => {
 					if(!spellData.isRitual && !spellData.isPrepared && !spellData.isInnate && !spellData.isFocusPool && !spellData.isFlexible && !sp.isCantrip && sp.uses.value < 1) { return; }
                                         if (sp.uses?.value !== undefined && sp.uses?.value === 0 ) { return; }
 					sp.active.forEach((spa,index) => {
 						if(spa === null) { return; }
 						if(spa.expended) { return; }
-						if(spa.spell.isFocusSpell && !spa.spell.isCantrip && token.actor.system.resources.focus.value === 0) { return; }
+						if(spa.spell.isFocusSpell && !spa.spell.isCantrip && token.actor.data.data.resources.focus.value === 0) { return; }
 						let type = '';
 						if (spellData.isRitual) { type = 'ritual'}
 						spells.push({name: spa.spell.name, spell: spa, lvl: sp.level, type: type, index: index, sEId: spellData.id});
@@ -122,7 +123,7 @@ let content = `
 </script>`;
 token.actor.itemTypes.spellcastingEntry.forEach((value,index) => {
   const test = value.getSpellData();
-  if (test.isFocusPool && !test.levels.some(x => x.isCantrip) && token.actor.system.resources.focus.value === 0){ return; }
+  if (test.isFocusPool && !test.levels.some(x => x.isCantrip) && token.actor.data.data.resources.focus.value === 0){ return; }
   content = content + `<button name="button${index}" class="psya-buttons ${index}" type="button" value="${value.name}" onclick="Spells('${value.id}')">${value.name}</button>`
 });  
 

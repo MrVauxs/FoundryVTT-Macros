@@ -25,12 +25,12 @@ async function Scroll() {
   const scroll = [];
  
   token.actor.itemTypes.consumable.forEach(s => {
-   if(s.system.consumableType.value === "scroll" && s.isIdentified) { scroll.push(s); }
+   if(s.data.data.consumableType.value === "scroll" && s.isIdentified) { scroll.push(s); }
   });
  
   if (scroll.length === 0) { return ui.notifications.warn("You do don't have scrolls to cast from.");}
-  const choiceS = await choose(scroll.map(n => n.name),`Pick a Scroll`);
-  const chosen = scroll.find(x => x.name === choiceS);
+  const choiceS = await choose(scroll.map(n => n.data.name),`Pick a Scroll`);
+  const chosen = scroll.find(x => x.data.name === choiceS);
   await chosen.toMessage();
 }
  
@@ -40,7 +40,7 @@ async function Wand(){
   const wand = [];
  
   token.actor.itemTypes.consumable.forEach(s => {
-   if (s.system.consumableType.value === "wand" && s.isIdentified && s.system.charges.value > 0) { wand.push(s); }
+   if (s.data.data.consumableType.value === "wand" && s.isIdentified && s.data.data.charges.value > 0) { wand.push(s); }
   });
   
   token.actor.itemTypes.equipment.forEach( e => {
@@ -48,20 +48,20 @@ async function Wand(){
   });
 
   if (wand.length === 0) { return ui.notifications.warn("You do don't have wands to cast from.");}
-  const choiceW = await choose(wand.map(n => n.name),`Pick a Wand`);
-  const chosen = await wand.find(x => x.name === choiceW);
+  const choiceW = await choose(wand.map(n => n.data.name),`Pick a Wand`);
+  const chosen = await wand.find(x => x.data.name === choiceW);
   if (sW.map(n => n.name).includes(chosen.slug)) {
     const spells = await game.packs.get('pf2e.spells-srd');
     const sFBall = await spells.getDocument("sxQZ6yqTn0czJxVd");
     const source = await (await fromUuid("Compendium.pf2e.equipment-srd.fomEZZ4MxVVK3uVu")).toObject();
-    source.spell.data = sFBall.data;
-    source.spell.heightenedLevel = sW.find(n => n.name === chosen.slug).level;
-    source.slug = "temp-wosf-holder";
+    source.data.spell.data = sFBall.data;
+    source.data.spell.heightenedLevel = sW.find(n => n.name === chosen.slug).level;
+    source.data.slug = "temp-wosf-holder";
     await token.actor.createEmbeddedDocuments('Item', [source]);
     const sFB = token.actor.items.find(s => s.slug === "temp-wosf-holder");
     console.log(chosen);
-    sFB.system.spell.name = chosen.name;
-    sFB.system.spell.system.description.value = chosen.description;
+    sFB.data.data.spell.data.name = chosen.name;
+    sFB.data.data.spell.data.data.description.value = chosen.description;
     console.log(sFB);
     await sFB.castEmbeddedSpell();
     await sFB.delete();

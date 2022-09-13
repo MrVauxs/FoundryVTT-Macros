@@ -8,12 +8,12 @@ You can clear your Standby Spell and Entry by choosing 'Clear Standby Spell' ent
 */
 
 if (canvas.tokens.controlled.length !== 1) { return ui.notifications.warn("You must select 1 token that's a Magus or has the Magus Dedication!"); }
-if (token.actor.class.slug !== "magus" && token.actor.flags.pf2e.rollOptions.all["class:magus"] === undefined && !token.actor.itemTypes.feat.some(f => f.slug === "magus-dedication")) { return ui.notifications.warn("The selected token is not a Magus or does not possess the Magus Dedication!"); }
+if (token.actor.class.slug !== "magus" && token.actor.data.flags.pf2e.rollOptions.all["class:magus"] === undefined && !token.actor.itemTypes.feat.some(f => f.slug === "magus-dedication")) { return ui.notifications.warn("The selected token is not a Magus or does not possess the Magus Dedication!"); }
 if (token.actor.itemTypes.feat.some(f => f.slug === "magus-dedication") && !token.actor.itemTypes.feat.some(f => f.slug === "spellstriker")) { return ui.notifications.warn("Token with Magus Dedication does not possess the Spellstriker feat!"); }
 if (!token.actor.itemTypes.feat.some(f => f.slug === "standby-spell")) { return ui.notifications.warn("Selected token does not possess the Standby Spell feat!"); }
 
 
-let entry = token.actor.itemTypes.spellcastingEntry.find(sce => sce.flags.pf2e.magusSE);
+let entry = token.actor.itemTypes.spellcastingEntry.find(sce => sce.data.flags.pf2e.magusSE);
 
 //If you accidentally chose the wrong spellcasting entry just remove the comments from the following lines, then add the comments back after switching your spellcasting entry:
 //entry.unsetFlag(("pf2e","magusSE");
@@ -35,22 +35,22 @@ if (entry === undefined) {
 const spells = [];
 entry.spells.contents.forEach( sp => {
   const exceptions = ['magic-missile','force-fang','heal'];
-  if (!sp.system.traits.value.includes("attack") && !token.actor.itemTypes.feat.some(f => f.slug === 'expansive-spellstrike')) { return; }
-  if (sp.system.spellType.value === 'utility' || sp.system.spellType.value === 'heal') { 
+  if (!sp.data.data.traits.value.includes("attack") && !token.actor.itemTypes.feat.some(f => f.slug === 'expansive-spellstrike')) { return; }
+  if (sp.data.data.spellType.value === 'utility' || sp.data.data.spellType.value === 'heal') { 
     if (!exceptions.includes(sp.slug)) { return; }
   }
   spells.push(sp);
 });
 
 
-if (spells.some(s => s.flags.pf2e.standbySpell === true)) {
-  const options = spells.filter(c => !c.isCantrip && c.flags.standbySpell !== true).map(n => n.name);
+if (spells.some(s => s.data.flags.pf2e.standbySpell === true)) {
+  const options = spells.filter(c => !c.isCantrip && c.data.flags.standbySpell !== true).map(n => n.name);
   options.sort();
   options.push(`Clear Standby Spell`);
-  const flagged = spells.find(s => s.flags.pf2e.standbySpell === true);
+  const flagged = spells.find(s => s.data.flags.pf2e.standbySpell === true);
   const choice3 = await choose( options, prompt = `Replace your Standby Spell (${flagged.name}):`);
   if (choice3 === `Clear Standby Spell`) {
-    const flagged1 = token.actor.itemTypes.spell.find(s => s.flags.pf2e.standbySpell === true);
+    const flagged1 = token.actor.itemTypes.spell.find(s => s.data.flags.pf2e.standbySpell === true);
     await flagged1.unsetFlag("pf2e","standbySpell");
     await entry.unsetFlag("pf2e","magusSE");
     return ui.notifications.info(`Standby Spell and Standby Spell Entry cleared`);

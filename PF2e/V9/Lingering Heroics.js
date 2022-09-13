@@ -10,7 +10,7 @@ Have the DM edit the duration of one of the effects to 3 rounds and the other to
 
 if (!actor || token.actor.type !== 'character') { return ui.notifications.warn("You must have a PC token selected"); }
 if (!token.actor.itemTypes.feat.some(lc => lc.slug === "lingering-composition")) { return ui.notifications.warn("The actor does not possess the Lingering Composition feat"); }
-if (actor.system.resources.focus.value === 0 || actor.system.resources.focus.value === undefined) { return ui.notifications.warn("You have no focus points"); }
+if (actor.data.data.resources.focus.value === 0 || actor.data.data.resources.focus.value === undefined) { return ui.notifications.warn("You have no focus points"); }
 	
 const skillName = "Performance";
 var actionSlug = "lingering-composition"
@@ -22,7 +22,7 @@ const modifiers = []
 	//new game.pf2e.Modifier('Expanded Healer\'s Tools', 1, 'item')
 	//];
       
-let cantrips = token.actor.itemTypes.spell.filter(s=> s.isFocusSpell === true && s.isCantrip === true && s.system.traits.value.includes('composition') && s.system.duration.value === '1 round');
+let cantrips = token.actor.itemTypes.spell.filter(s=> s.isFocusSpell === true && s.isCantrip === true && s.data.data.traits.value.includes('composition') && s.data.data.duration.value === '1 round');
             
 let label;
 if (cantrips.find(f => f.slug === 'dirge-of-doom') !== undefined) { label = `Choose a Spell : <br>(Target all affected enemies for Dirge of Doom)` }
@@ -44,16 +44,16 @@ let effectcom = game.packs.find(sp => sp.collection === "pf2e.spell-effects");
       
 let effects = await effectcom.getDocuments();
       
-let effect = effects.find(e => e.name.includes(choice[0]));
+let effect = effects.find(e => e.data.name.includes(choice[0]));
       
-const notes = [...token.actor.system.skills.prf.notes];
+const notes = [...token.actor.skills.performance.data.notes];
       
 if (choice[2] === true) {
   if ( choice[0] === 'Inspire Courage' || choice[0] === 'Inspire Defense' || choice[0] === 'Song of Strength') {  
     var actionSlug = "inspire-heroics";
     var actionName = "Inspire Heroics";
-    let ihc = effects.find(e => e.name.includes(`${choice[0].substr(8)}, +3`));
-    let ihs = effects.find(e => e.name.includes(`${choice[0].substr(8)}, +2`));
+    let ihc = effects.find(e => e.data.name.includes(`${choice[0].substr(8)}, +3`));
+    let ihs = effects.find(e => e.data.name.includes(`${choice[0].substr(8)}, +2`));
     notes.push({"outcome":["success"], "selector":"performance", "text":`<p><a class="entity-link content-link" draggable="true" data-pack="pf2e.spell-effects" data-id="${ihs.id}">${ihs.name}</a></p>`});
     notes.push({"outcome":["criticalSuccess"], "selector":"performance", "text":`<p><a class="entity-link content-link" draggable="true" data-pack="pf2e.spell-effects" data-id="${ihc.id}">${ihc.name}</a></p>`});
     notes.push({"outcome":["failure"], "selector":"performance", "text":`<p><a class="entity-link content-link" draggable="true" data-pack="pf2e.spell-effects" data-id="${effect.id}">${effect.name}</a> You don't spend the Focus Point for casting the spell</p>`});
@@ -63,8 +63,8 @@ if (choice[2] === true) {
 
 if (effect !== undefined && (choice[2] === undefined || !choice[2])) {
   if(game.items.some(i => i.slug === effect.slug) && !game.packs.some(s => s.collection === "xdy-pf2e-workbench.asymonous-benefactor-effects")) {
-    const success = game.items.find(s => s.slug === effect.slug && s.system.duration.value === 3);
-    const cs = game.items.find(s => s.slug === effect.slug && s.system.duration.value === 4);
+    const success = game.items.find(s => s.slug === effect.slug && s.data.data.duration.value === 3);
+    const cs = game.items.find(s => s.slug === effect.slug && s.data.data.duration.value === 4);
     notes.push({"outcome":["success"], "selector":"performance", "text":`<p><a class="entity-link content-link" draggable="true" data-type="Item" data-entity="Item" data-id="${success.id}">${success.name}</a> lasts 3 rounds</p>`});
     notes.push({"outcome":["criticalSuccess"], "selector":"performance", "text":`<p><a class="entity-link content-link" draggable="true" data-type="Item" data-entity="Item" data-id="${cs.id}">${cs.name}</a> lasts 4 rounds</p>`});
     notes.push({"outcome":["failure"], "selector":"performance", "text":`<p><a class="entity-link content-link" draggable="true" data-pack="pf2e.spell-effects" data-id="${effect.id}">${effect.name}</a> lasts 1 round, but you don't spend the Focus Point for casting the spell</p>`});
@@ -73,8 +73,8 @@ if (effect !== undefined && (choice[2] === undefined || !choice[2])) {
 	if ( game.packs.some(s => s.collection === "xdy-pf2e-workbench.asymonous-benefactor-effects") ) {
     const pack = game.packs.find(s => s.collection === "xdy-pf2e-workbench.asymonous-benefactor-effects");
     const wbef = await pack.getDocuments();
-    const success = wbef.find( s => s.slug === effect.slug && s.system.duration.value === 3 );
-    const cs = wbef.find( s => s.slug === effect.slug && s.system.duration.value === 4 );
+    const success = wbef.find( s => s.slug === effect.slug && s.data.data.duration.value === 3 );
+    const cs = wbef.find( s => s.slug === effect.slug && s.data.data.duration.value === 4 );
     notes.push({"outcome":["success"], "selector":"performance", "text":`<p><a class="entity-link content-link" draggable="true" data-pack="xdy-pf2e-workbench.asymonous-benefactor-effects" data-id="${success.id}">${success.name}</a> lasts 3 rounds</p>`});
     notes.push({"outcome":["criticalSuccess"], "selector":"performance", "text":`<p><a class="entity-link content-link" draggable="true" data-pack="xdy-pf2e-workbench.asymonous-benefactor-effects" data-id="${cs.id}">${cs.name}</a> lasts 4 rounds</p>`});
     notes.push({"outcome":["failure"], "selector":"performance", "text":`<p><a class="entity-link content-link" draggable="true" data-pack="pf2e.spell-effects" data-id="${effect.id}">${effect.name}</a> lasts 1 round, but you don't spend the Focus Point for casting the spell</p>`});
@@ -181,6 +181,6 @@ const roll = await game.pf2e.Check.roll(
 	//for callback: ,(Roll) => {console.log(Roll);}
 );
 if (roll.data.degreeOfSuccess !== 1) { 
-  const currentpoints = actor.system.resources.focus.value-1;
-  actor.update({"system.resources.focus.value":currentpoints});
+  const currentpoints = actor.data.data.resources.focus.value-1;
+  actor.update({"data.resources.focus.value":currentpoints});
 }

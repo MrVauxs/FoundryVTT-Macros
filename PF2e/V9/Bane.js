@@ -10,7 +10,7 @@ if (canvas.tokens.controlled.length < 1) { return ui.notifications.warn("You mus
 if (canvas.tokens.controlled.length > 1) { return ui.notifications.warn("You must have only one token selected"); }
 if (!token.actor.itemTypes.spell.some(x => x.slug === 'bane')) { return ui.notifications.warn('You do not possess the bane spell'); }
 const effect = (await fromUuid('Compendium.xdy-pf2e-workbench.xdy-pf2e-workbench-items.YcyN7BDbL0Nt3CFN')).toObject();
-effect.system.slug = 'bane-aura';
+effect.data.slug = 'bane-aura';
 let first = false;
 if (!token.actor.itemTypes.effect.some(e => e.slug === 'bane-aura')) { 
     await token.actor.createEmbeddedDocuments("Item", [effect]);
@@ -24,7 +24,7 @@ if (token.actor.itemTypes.effect.some(e => e.slug === 'bane-aura') && !first) {
         yes: { label: 'Yes', callback: async (html) => {
             const id = token.actor.itemTypes.effect.find(e => e.slug === 'bane-aura').id;
             const ef = token.actor.getEmbeddedDocument("Item",id).toObject();
-            ef.system.rules[0].radius += 5;
+            ef.data.rules[0].radius += 5;
             await token.actor.updateEmbeddedDocuments("Item", [ef],resolve);
             } 
         },

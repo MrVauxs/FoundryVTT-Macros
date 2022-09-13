@@ -10,7 +10,7 @@ Further modified by MrVauxs to be usable with and without animations.
 */
 
 const mani = ["wand-of-manifold-missiles-1st-level-spell","wand-of-manifold-missiles-3rd-level-spell","wand-of-manifold-missiles-5th-level-spell","wand-of-manifold-missiles-7th-level-spell"]
-if (!token.actor.itemTypes.spell.some(s => s.slug === 'magic-missile') && !token.actor.itemTypes.consumable.some(s => s.data.data.spell?.data?.data?.slug === 'magic-missile') && !token.actor.itemTypes.equipment.some(s => mani.includes(s.slug))) { return ui.notifications.error('You do not have Magic Missile') }if (game.user.targets.ids === undefined || game.user.targets.ids.length === 0) { return ui.notifications.error('At least 1 target is required'); }
+if (!token.actor.itemTypes.spell.some(s => s.slug === 'magic-missile') && !token.actor.itemTypes.consumable.some(s => s.system.spell?.system?.slug === 'magic-missile') && !token.actor.itemTypes.equipment.some(s => mani.includes(s.slug))) { return ui.notifications.error('You do not have Magic Missile') }if (game.user.targets.ids === undefined || game.user.targets.ids.length === 0) { return ui.notifications.error('At least 1 target is required'); }
 
 const mmE = token.actor.itemTypes.spellcastingEntry.filter(m => m.spells.some(x => x.slug === 'magic-missile') === true);
 
@@ -22,31 +22,31 @@ token.actor.itemTypes.spell.forEach(id => {
 const mm = [];
 const formula =  `{1d4 + 1}[force]`;
 
-mmE.forEach(e => {
-          const spellData = e.getSpellData();
+for (const e of mmE) {
+          const spellData = await e.getSpellData();
 	  spellData.levels.forEach(sp => {
             if(sp.uses !== undefined && !sp.isCantrip && sp.uses.value < 1) { return; }
 	    sp.active.forEach((spa,index) => {
 	      if(spa === null) { return; }
               if(spa.spell.slug !== "magic-missile") { return; }
               if(spa.expended) { return; }
-              if(spellData.isFocusPool && !spa.spell.isCantrip && token.actor.data.data.resources.focus.value === 0){ return; }
+              if(spellData.isFocusPool && !spa.spell.isCantrip && token.actor.system.resources.focus.value === 0){ return; }
               let level = `lv${sp.level}`
               const name = spa.spell.name;
 	      const sname = `${name} ${level} (${e.name})`;
-              mm.push({name: sname, entryId: spellData.id, level: sp.level, spId: spa.spell.id, slug: spa.spell.slug, DC: e.data.data.statisticData.dc.value, spell: spa.spell, index: index});
+              mm.push({name: sname, entryId: spellData.id, level: sp.level, spId: spa.spell.id, slug: spa.spell.slug, spell: spa.spell, index: index});
 	    });
 	  });
-});	
+};	
 
 token.actor.itemTypes.consumable.forEach(s => {
-	if (!s.data.data.traits.value.includes("wand") && !s.data.data.traits.value.includes("scroll")) { return; }
-	if (s.data.data.spell.data.data.slug === 'magic-missile') { 
-		if (s.data.data.traits.value.includes("wand") && s.data.data.charges.value > 0) {
+	if (!s.system.traits.value.includes("wand") && !s.system.traits.value.includes("scroll")) { return; }
+	if (s.system.spell?.system?.slug === 'magic-missile') { 
+		if (s.system.traits.value.includes("wand") && s.system.charges.value > 0) {
 			mm.push({name: `${s.name}`, level: parseInt(s.slug.substr(11,1)), prepared: false, entryId: s.id , wand: true, scroll: false, spont: false,  }) 
 		}
-		if (s.data.data.traits.value.includes("scroll")) {
-			mm.push({name: `${s.name}`, level: s.data.data.spell.heightenedLevel, prepared: false, entryId: s.id, wand: false, scroll: true, spont: false })
+		if (s.system.traits.value.includes("scroll")) {
+			mm.push({name: `${s.name}`, level: s.system.spell.heightenedLevel, prepared: false, entryId: s.id, wand: false, scroll: true, spont: false })
 		}
 	}
 });
@@ -58,7 +58,7 @@ token.actor.itemTypes.equipment.forEach(s => {
 
 if (token.actor.itemTypes.effect.some(e => e.slug === "maniEF")) {
 	const effect = token.actor.itemTypes.effect.find(e => e.slug === "maniEF");
-	mm.push({name: `${effect.name}`, level: effect.data.data.level.value, prepared: false, entryId: null, wand: false, scroll: false, spont: false });
+	mm.push({name: `${effect.name}`, level: effect.system.level.value, prepared: false, entryId: null, wand: false, scroll: false, spont: false });
 }
 
 if (mm.length === 0) { return ui.notifications.warn("You currently have no available means of casting Magic Missile");}
@@ -192,19 +192,20 @@ if (mmch.wand) {
 	}
 	else {
 		const w = token.actor.itemTypes.consumable.find(id => id.id === mmch.entryId);
-		const wData = duplicate(w.data);
-		wData.data.charges.value --;
-		w.update(wData);
+		console.log(w);
+		const wData = duplicate(w);
+		wData.system.charges.value --;
+		await actor.updateEmbeddedDocuments('Item',[wData]);
 	}
 }
 
 /* Scroll */
 if(mmch.scroll){
 	const s = token.actor.itemTypes.consumable.find(id => id.id === mmch.entryId);
-	if (s.data.data.quantity > 1) {
-		const sData = duplicate(s.data);
-		sData.data.quantity --;
-		s.update(sData);
+	if (s.system.quantity > 1) {
+		const sData = duplicate(s);
+		sData.system.quantity --;
+		await actor.updateEmbeddedDocuments('Item',[sData]);
 	}
 	else { await s.delete(); }
 }

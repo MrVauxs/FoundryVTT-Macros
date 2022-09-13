@@ -65,7 +65,7 @@ const nF = [
 const script1 = async function CToggle(c) {
   for(const token of canvas.tokens.controlled) {
    if (token.actor === null) { ui.notifications.warn(`${token.name} does not have an actor or is broken`); continue; }
-   if (token.actor.itemTypes.condition.some(p => p.slug === c && p.system.references.parent !== undefined)) { continue; }
+   if (token.actor.itemTypes.condition.some(p => p.slug === c && p.data.data.references.parent !== undefined)) { continue; }
    if (token.actor !== null) { await token.actor.toggleCondition(c); }
   }
 };
@@ -90,7 +90,7 @@ const script4 = async function CCon() {
     for(const token of canvas.tokens.controlled) {
       if (token.actor === null) { ui.notifications.warn(`${token.name} does not have an actor or is broken`); continue; }
       if ( token.actor.itemTypes.effect.some(f => f.name === c) ) { (await token.actor.itemTypes.effect.find(n => n.name === c)).delete(); continue; }
-      if (!token.actor.itemTypes.condition.some(p => p.slug === c) || token.actor.itemTypes.condition.some(p => p.slug === c && p.system.references.parent !== undefined)) { continue; }
+      if (!token.actor.itemTypes.condition.some(p => p.slug === c) || token.actor.itemTypes.condition.some(p => p.slug === c && p.data.data.references.parent !== undefined)) { continue; }
       if (token.actor !== null) { await token.actor.toggleCondition(c); }
     }
   }
@@ -102,7 +102,7 @@ const script4 = async function CCon() {
       });
     }
     t.actor.itemTypes.condition.forEach ( c => {
-      if (c.system.references.parent !== undefined) { return; }
+      if (c.data.data.references.parent !== undefined) { return; }
       cons.push(c.slug);
     });
   });
