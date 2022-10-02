@@ -42,7 +42,7 @@ if (choice === "ims") {
     const rE4 = {"key":"PF2E.RuleElement.Note","title":`${actionName}`,"outcome":["criticalFailure"], "selector":"diplomacy", "text":`<p>You fail to enter the stance and can't take this action again for 1 minute.</p>`,"predicate":{"all":[`action:${actionSlug}`]}};
     const data = (await fromUuid(`Actor.${token.actor.id}.Item.${token.actor.itemTypes.feat.find(x => x.slug === actionSlug).id}`)).toObject();
     data.system.rules.push(rE1,rE2,rE3,rE4);
-    token.actor.updateEmbeddedDocuments("Item",[data]);
+    await token.actor.updateEmbeddedDocuments("Item",[data]);
   }
 }
 
@@ -59,7 +59,7 @@ if (choice === "dms") {
     const rE4 = {"key":"PF2E.RuleElement.Note","title":`${actionName}`,"outcome":["criticalFailure"], "selector":"intimidation", "text":`<p>You fail to enter the stance and can't take this action again for 1 minute.</p>`,"predicate":{"all":[`action:${actionSlug}`]}};
     const data = (await fromUuid(`Actor.${token.actor.id}.Item.${token.actor.itemTypes.feat.find(x => x.slug === actionSlug).id}`)).toObject();
     data.system.rules.push(rE1,rE2,rE3,rE4);
-    token.actor.updateEmbeddedDocuments("Item",[data]);
+    await token.actor.updateEmbeddedDocuments("Item",[data]);
   }
 }
 
@@ -103,7 +103,7 @@ async function main(html) {
 async function SRoll() {
   const aroll = deepClone(token.actor.skills[skillKey]);
   aroll.label = `${skillName} - ${actionName}`
-  const roll = await aroll.check.roll({extraRollOptions:[options],dc:{value:DC}});
+  const roll = await aroll.check.roll({extraRollOptions:[options],dc:{value:DC},skipDialog:true});
   if (roll.data.degreeOfSuccess === 2) {
     if(choice === 'dms'){
       const effect = (await fromUuid('Compendium.xdy-pf2e-workbench.xdy-pf2e-workbench-items.IkrhT9FMQDNALa8S')).toObject();
