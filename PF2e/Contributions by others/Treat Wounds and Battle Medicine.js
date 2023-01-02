@@ -70,6 +70,9 @@ const getRollOptions = ({ isRiskySurgery } = {}) => [
  ...(isRiskySurgery ? ['risky-surgery'] : []),
 ];
 
+/* Get DamageRoll */
+const DamageRoll = CONFIG.Dice.rolls.find(((R) => R.name === "DamageRoll"));
+
 /**
 * Get the formula for healing and the success label
 *
@@ -165,7 +168,7 @@ const rollTreatWounds = async ({
  const immunityMessage = `${target.name} is now immune to ${immunityEffect.name} for ${immunityEffect.system.duration.value} ${immunityEffect.system.duration.unit}.<br>${immunityMacroLink}`;
 
  if (assurance) {
-   const aroll = await new Roll(
+   const aroll = await new DamageRoll(
      `10 + ${med.modifiers.find((m) => m.type === 'proficiency').modifier}`
    ).roll({ async: true });
    ChatMessage.create({
@@ -177,7 +180,6 @@ const rollTreatWounds = async ({
      roll: aroll,
      speaker: ChatMessage.getSpeaker(),
    });
-   console.log(aroll)
    const atot = aroll.total - DC;
 
    const success = atot >= 10 ? 3 : atot >= 0 ? 2 : atot <= -10 ? 0 : 1;
@@ -195,13 +197,13 @@ const rollTreatWounds = async ({
        user: game.user.id,
        type: CONST.CHAT_MESSAGE_TYPES.ROLL,
        flavor: `<strong>Damage Roll: Risky Surgery</strong>`,
-       roll: await new Roll('{1d8}[slashing]').roll({ async: true }),
+       roll: await new DamgeRoll('{1d8}[slashing]').roll({ async: true }),
        speaker: ChatMessage.getSpeaker(),
      });
    }
    if (healFormula !== undefined) {
      const rollType = success > 1 ? 'Healing' : 'Damage';
-     const healRoll = await new Roll(`{${healFormula}}[${rollType}]`).roll({
+     const healRoll = await new DamageRoll(`${healFormula}[${rollType}]`).roll({
        async: true,
      });
      ChatMessage.create({
@@ -230,13 +232,13 @@ const rollTreatWounds = async ({
            user: game.user.id,
            type: CONST.CHAT_MESSAGE_TYPES.ROLL,
            flavor: `<strong>Damage Roll: Risky Surgery</strong>`,
-           roll: await new Roll('{1d8}[slashing]').roll({ async: true }),
+           roll: await new DamaageRoll('1d8[slashing]').roll({ async: true }),
            speaker: ChatMessage.getSpeaker(),
          });
        }
        if (healFormula !== undefined) {
          const rollType = roll.options.degreeOfSuccess > 1 ? 'Healing' : 'Damage';
-         const healRoll = await new Roll(`{${healFormula}}[${rollType}]`).roll(
+         const healRoll = await new DamageRoll(`${healFormula}[${rollType}]`).roll(
            { async: true }
          );
          ChatMessage.create({
