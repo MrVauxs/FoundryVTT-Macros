@@ -116,7 +116,8 @@ for (const m of tdiag) {
 if (tot > multi) { return ui.notifications.warn(`You have entered ${tot - multi} too many missiles. Please try again`) }
 if (tot < multi) { return ui.notifications.warn(`You have entered ${multi - tot} too few missiles. Please try again`) }
 
-let targetNum = 0
+let expend = true;
+let targetNum = 0;
 for (const a of fmm) {
 	if (a.num === 0 || a.num === undefined) { continue; }
 	let dam = token.actor.itemTypes.feat.some(ds => ds.slug === 'dangerous-sorcery') ? `(${a.num}d6 + ${a.num} + ${mmch.level})[force]` : `(${a.num}d6 + ${a.num})[force]`;
@@ -162,7 +163,7 @@ for (const a of fmm) {
 const s_entry = mmE.find(e => e.id === mmch.entryId);
 
 /* Expend slots */
-if (!mmch.wand && !mmch.scroll) {
+if (!mmch.wand && !mmch.scroll && expend) {
 	await s_entry.cast(mmch.spell, { slot: mmch.index, level: mmch.level, message: false });
 }
 
