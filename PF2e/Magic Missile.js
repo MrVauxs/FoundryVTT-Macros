@@ -8,7 +8,7 @@ The macro will not prompt for trick magic item due to DCs being variable. May ch
 This macro was modified slightly by Syven to include jb2a's animations.
 Further modified by MrVauxs to be usable with and without animations.
 
-And again by MrVauxs to include PF2e Target Damage compatibility. And Automated Animations compatibility.
+And again by MrVauxs to include PF2e Target Damage compatibility.
 */
 
 const mani = ["wand-of-manifold-missiles-1st-level-spell", "wand-of-manifold-missiles-3rd-level-spell", "wand-of-manifold-missiles-5th-level-spell", "wand-of-manifold-missiles-7th-level-spell"]
@@ -141,6 +141,9 @@ for (const a of fmm) {
 			}
 		}
 	);
+	if (!(typeof args === 'undefined' || args === null)) {
+		expend = args[2] ?? true;
+	}
 	if (game.modules.get("autoanimations")?.active) {
 		await AutomatedAnimations.playAnimation(token, mmch.spell, { targets: [targets[targetNum]], hitTargets: [targets[targetNum]] })
 	} else if (game.modules.get("sequencer")?.active && (game.modules.get("JB2A_DnD5e")?.active || game.modules.get("jb2a_patreon")?.active)) {
