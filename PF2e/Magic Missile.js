@@ -117,8 +117,8 @@ let targetNum = 0
 for (const a of fmm){
     if(a.num === 0 || a.num === undefined) { continue; }
 	let dam = token.actor.itemTypes.feat.some(ds => ds.slug === 'dangerous-sorcery') ? `(${a.num}d6 + ${a.num} + ${mmch.level})[force]` : `(${a.num}d6 + ${a.num})[force]`;
-	const droll = new DamageRoll(dam);
-    	droll.toMessage(
+	const droll = await new DamageRoll(dam);
+    	await droll.toMessage(
 		{ 
 			flavor: `<strong>${a.num} Magic Missile(s) targeting ${a.name}</strong><br><a class="entity-link content-link" data-pack="pf2e.spells-srd" data-id="gKKqvLohtrSJj3BM"><strong>Magic Missile</strong></a>`, 
 			speaker: ChatMessage.getSpeaker(), 
