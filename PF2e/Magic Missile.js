@@ -7,6 +7,8 @@ The macro will not prompt for trick magic item due to DCs being variable. May ch
 
 This macro was modified slightly by Syven to include jb2a's animations.
 Further modified by MrVauxs to be usable with and without animations.
+
+And again by MrVauxs to include PF2e Target Damage compatibility.
 */
 
 const mani = ["wand-of-manifold-missiles-1st-level-spell","wand-of-manifold-missiles-3rd-level-spell","wand-of-manifold-missiles-5th-level-spell","wand-of-manifold-missiles-7th-level-spell"]
@@ -116,7 +118,26 @@ for (const a of fmm){
     if(a.num === 0 || a.num === undefined) { continue; }
 	let dam = token.actor.itemTypes.feat.some(ds => ds.slug === 'dangerous-sorcery') ? `(${a.num}d6 + ${a.num} + ${mmch.level})[force]` : `(${a.num}d6 + ${a.num})[force]`;
 	const droll = new DamageRoll(dam);
-    droll.toMessage({ flavor: `<strong>${a.num} Magic Missile(s) targeting ${a.name}</strong><br>${mmch.spell.link} cast at Lv${mmch.level}`, speaker: ChatMessage.getSpeaker() });
+    	droll.toMessage(
+		{ 
+			flavor: `<strong>${a.num} Magic Missile(s) targeting ${a.name}</strong><br><a class="entity-link content-link" data-pack="pf2e.spells-srd" data-id="gKKqvLohtrSJj3BM"><strong>Magic Missile</strong></a>`, 
+			speaker: ChatMessage.getSpeaker(), 
+			flags: { 
+				"pf2e-target-damage": { 
+					targets: [targets[targetNum]].map((target) => {
+						return {
+							id: target.id,
+							name: target.name,
+							uuid: target.document.uuid,
+							img: target.document.texture.src,
+							hasPlayerOwner: target.document.hasPlayerOwner,
+							playersCanSeeName: target.document.playersCanSeeName,
+						}
+					}) 
+				} 
+			}
+		}
+	);
 	if (game.modules.get("sequencer")?.active && (game.modules.get("JB2A_DnD5e")?.active || game.modules.get("jb2a_patreon")?.active)) {new Sequence()
         .effect()
             .file(`jb2a.magic_missile`)
