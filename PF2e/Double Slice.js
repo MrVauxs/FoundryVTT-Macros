@@ -65,6 +65,11 @@ if ( pdos === "criticalSuccess" ) {
     pd = await primary.critical({event})
 }
 
+await new Promise(async (resolve) => {
+        sd = await secondary.damage({event})
+        setTimeout(resolve,200);
+    });
+
 if ( sdos === "success" ) {
     sd = await secondary.damage({event})
 }
@@ -73,6 +78,7 @@ if ( sdos === "criticalSuccess" ) {
     sd = await secondary.critical({event})
 }
 
+console.log(pd,sd);
 const ft = `{${pd._formula.replace(/{/g, '').replace(/}/g, '')},${sd._formula.replace(/{/g, '').replace(/}/g, '')}}`;
 const instances = pd.instances.concat(sd.instances);
 
